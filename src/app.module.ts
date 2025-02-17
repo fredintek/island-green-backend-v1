@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PageModule } from './page/page.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 
@@ -29,6 +30,7 @@ const ENV = process.env.NODE_ENV;
         database: configService.get('database.databaseName'),
       }),
     }),
+    PageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
