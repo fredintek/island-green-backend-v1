@@ -4,6 +4,10 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PageModule } from './page/page.module';
+import { SectionModule } from './section/section.module';
+import { ProjectHouseModule } from './project-house/project-house.module';
+import { CommunicationModule } from './communication/communication.module';
+import { FaqModule } from './faq/faq.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 
@@ -21,8 +25,8 @@ const ENV = process.env.NODE_ENV;
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
-        autoLoadEntities: configService.get('database.autoloadEntities'),
-        synchronize: configService.get('database.synchronize'),
+        autoLoadEntities: true,
+        synchronize: true,
         port: +configService.get('database.port'),
         host: configService.get('database.host'),
         username: configService.get('database.username'),
@@ -31,6 +35,10 @@ const ENV = process.env.NODE_ENV;
       }),
     }),
     PageModule,
+    SectionModule,
+    ProjectHouseModule,
+    CommunicationModule,
+    FaqModule,
   ],
   controllers: [AppController],
   providers: [AppService],
