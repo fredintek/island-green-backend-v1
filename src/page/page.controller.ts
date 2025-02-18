@@ -5,9 +5,12 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { PageService } from './providers/page.service';
+import { CreatePageDto } from './dtos/create-page.dto';
+import { UpdatePageDto } from './dtos/update-page.dto';
 
 @Controller('page')
 export class PageController {
@@ -19,8 +22,13 @@ export class PageController {
   ) {}
 
   @Post()
-  createPage(@Body() body: any) {
-    return this.pageService.createPage(body);
+  createPage(@Body() createPageDto: CreatePageDto) {
+    return this.pageService.createPage(createPageDto);
+  }
+
+  @Patch()
+  updatePage(@Body() updatePageDto: UpdatePageDto) {
+    return this.pageService.updatePage(updatePageDto);
   }
 
   @Get()

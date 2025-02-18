@@ -1,6 +1,8 @@
 import { ProjectHouse } from 'src/project-house/project-house.entity';
 import { Section } from 'src/section/section.entity';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   DeleteDateColumn,
   Entity,
@@ -9,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import slugify from 'slugify';
 
 @Entity()
 export class Page {
@@ -18,13 +21,15 @@ export class Page {
   @Column({
     type: 'json',
     nullable: false,
-    unique: true,
   })
   title: {
     en: string;
     ru: string;
     tr: string;
   };
+
+  @Column({ type: 'varchar', length: 255 })
+  slug: string;
 
   @ManyToOne(() => Page, (parentPage) => parentPage.subPages, {
     nullable: true,
@@ -46,4 +51,12 @@ export class Page {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  generateSlug() {
+    if (this.title?.en) {
+      this.slug = slugify(this.title.en, { lower: true, trim: true });
+    }
+  }
 }

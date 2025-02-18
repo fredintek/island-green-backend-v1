@@ -17,6 +17,12 @@ export class Section {
   type: string;
 
   @Column({
+    type: 'int',
+    nullable: false,
+  })
+  sortId: number;
+
+  @Column({
     type: 'json',
     nullable: true,
   })
