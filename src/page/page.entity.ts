@@ -28,6 +28,7 @@ export class Page {
 
   @ManyToOne(() => Page, (parentPage) => parentPage.subPages, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   parentPage: Page;
 

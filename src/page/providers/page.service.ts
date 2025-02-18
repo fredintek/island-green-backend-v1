@@ -34,4 +34,10 @@ export class PageService {
     });
     return pages;
   }
+
+  public async deleteSinglePage(id: number) {
+    const deletedPage = await this.pageRepository.delete({ id });
+    console.log('deleted page: ' + deletedPage);
+    return deletedPage;
+  }
 }

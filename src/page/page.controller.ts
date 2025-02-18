@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -30,5 +31,10 @@ export class PageController {
   @Get(':id')
   fetchSinglePage(@Param('id', ParseIntPipe) id: number) {
     return this.pageService.fetchSinglePage(id);
+  }
+
+  @Delete(':id')
+  deleteSinglePage(@Param('id', ParseIntPipe) id: number) {
+    return this.pageService.deleteSinglePage(id);
   }
 }
