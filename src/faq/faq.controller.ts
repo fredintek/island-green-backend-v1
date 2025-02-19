@@ -1,12 +1,16 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { FaqService } from './providers/faq.service';
+import { CreateFaqDto } from './dtos/create-faq.dto';
+import { UpdateFaqDto } from './dtos/update-faq.dto';
 
 @Controller('faq')
 export class FaqController {
@@ -37,16 +41,16 @@ export class FaqController {
    * Create FAQ
    */
   @Post()
-  createFaq() {
-    return 'Create FAQ';
+  createFaq(@Body() createFaqDto: CreateFaqDto) {
+    return this.faqService.createFaq(createFaqDto);
   }
 
   /**
    * Update FAQ
    */
-  @Post()
-  updateFaq() {
-    return 'Update FAQ';
+  @Patch()
+  updateFaq(@Body() updateFaqDto: UpdateFaqDto) {
+    return this.faqService.updateFaq(updateFaqDto);
   }
 
   @Delete(':faqId')

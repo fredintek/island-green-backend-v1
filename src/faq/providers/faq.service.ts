@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Faq } from '../faq.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateFaqDto } from '../dtos/create-faq.dto';
+import { UpdateFaqDto } from '../dtos/update-faq.dto';
 
 @Injectable()
 export class FaqService {
@@ -43,15 +45,40 @@ export class FaqService {
   /**
    *  Create FAQ
    */
-  public async createFaq() {
-    return 'Create FAQ';
+  public async createFaq(createFaqDto: CreateFaqDto) {
+    const newFaq = await this.faqRepository.create(createFaqDto);
+
+    await this.faqRepository.save(newFaq);
+
+    return {
+      message: 'FAQ created successfully',
+      data: newFaq,
+    };
   }
 
   /**
    *  Update FAQ
    */
-  public async updateFaq() {
-    return 'Update FAQ';
+  public async updateFaq(updateFaqDto: UpdateFaqDto) {
+    const { id, ...updateData } = updateFaqDto;
+
+    // find existing Faq
+    const faq = await this.faqRepository.findOne({ where: { id } });
+
+    if (!faq) {
+      throw new NotFoundException(`FAQ with ID ${id} not found`);
+    }
+
+    // update the fields dynamically
+    Object.assign(faq, updateData);
+
+    // save the updated Faq
+    await this.faqRepository.save(faq);
+
+    return {
+      message: 'FAQ updated successfully',
+      data: faq,
+    };
   }
 
   /**
