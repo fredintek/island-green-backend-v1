@@ -99,7 +99,7 @@ export class PageService {
 
   public async fetchAllPages() {
     const pages = await this.pageRepository.find({
-      relations: ['subPages'],
+      relations: ['subPages', 'sections'],
       where: {
         parentPage: IsNull(),
       },

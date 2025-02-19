@@ -11,8 +11,9 @@ export class Section {
 
   @Column({
     type: 'varchar',
-    length: 50,
+    length: 255,
     nullable: false,
+    unique: true,
   })
   type: string;
 
@@ -24,7 +25,7 @@ export class Section {
 
   @Column({
     type: 'json',
-    nullable: true,
+    nullable: false,
   })
   content: any;
 }
