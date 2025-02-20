@@ -1,19 +1,15 @@
-import { IsNotEmpty, IsObject } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, ValidateNested } from 'class-validator';
+import { MultilingualTextDto } from 'src/project-house/dtos/create-project-house.dto';
 
 export class CreateFaqDto {
-  @IsObject()
   @IsNotEmpty()
-  question: {
-    en: string;
-    tr: string;
-    ru: string;
-  };
+  @ValidateNested()
+  @Type(() => MultilingualTextDto)
+  question: MultilingualTextDto;
 
-  @IsObject()
   @IsNotEmpty()
-  answer: {
-    en: string;
-    tr: string;
-    ru: string;
-  };
+  @ValidateNested()
+  @Type(() => MultilingualTextDto)
+  answer: MultilingualTextDto;
 }

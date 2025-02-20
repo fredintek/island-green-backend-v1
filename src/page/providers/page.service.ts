@@ -92,7 +92,7 @@ export class PageService {
   public async fetchSinglePage(id: number) {
     const pages = await this.pageRepository.find({
       where: { id },
-      relations: ['subPages', 'parentPage'],
+      relations: ['subPages', 'parentPage', 'projectHouse'],
     });
     return pages;
   }

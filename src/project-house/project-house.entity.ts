@@ -20,16 +20,22 @@ export class ProjectHouse {
   };
 
   @Column({
-    type: 'varchar',
-    nullable: true,
+    type: 'json',
+    nullable: false,
   })
-  coverImage: string;
+  coverImage: {
+    publicId: string;
+    url: string;
+  };
 
   @Column({
-    type: 'varchar',
-    nullable: true,
+    type: 'json',
+    nullable: false,
   })
-  displayImage: string;
+  displayImage: {
+    publicId: string;
+    url: string;
+  };
 
   @Column({
     type: 'json',

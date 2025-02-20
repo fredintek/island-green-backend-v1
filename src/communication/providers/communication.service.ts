@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { Communication } from '../communication.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCommunicationDto } from '../dtos/create-communication.dto';
+import { UpdateCommunicationDto } from '../dtos/update-communication.dto';
 
 @Injectable()
 export class CommunicationService {
@@ -63,6 +64,69 @@ export class CommunicationService {
     return {
       message: 'Communication retrieved successfully',
       data: communication,
+    };
+  }
+
+  /**
+   * Update Single Communication
+   */
+  public async updateCommunication(
+    updateCommunicationDto: UpdateCommunicationDto,
+  ) {
+    const existingCommunication = await this.communicationRepository.findOne({
+      where: { id: updateCommunicationDto.id },
+    });
+
+    if (!existingCommunication) {
+      throw new NotFoundException(
+        `Communication with ID ${updateCommunicationDto.id} not found`,
+      );
+    }
+
+    // Update fields only if provided in DTO
+    if (updateCommunicationDto.phoneNumber) {
+      existingCommunication.phoneNumber = JSON.stringify(
+        updateCommunicationDto.phoneNumber,
+      );
+    }
+
+    if (updateCommunicationDto.email) {
+      existingCommunication.email = JSON.stringify(
+        updateCommunicationDto.email,
+      );
+    }
+
+    if (updateCommunicationDto.address) {
+      existingCommunication.address = JSON.stringify(
+        updateCommunicationDto.address,
+      );
+    }
+
+    await this.communicationRepository.save(existingCommunication);
+
+    return {
+      message: 'Communication updated successfully',
+      data: existingCommunication,
+    };
+  }
+
+  public async deleteCommunication(communicationId: number) {
+    // find communication with the specified ID
+    const communication = await this.communicationRepository.findOne({
+      where: { id: communicationId },
+    });
+
+    if (!communication) {
+      throw new NotFoundException(
+        `Communication with ID ${communicationId} not found`,
+      );
+    }
+
+    // delete the communication
+    await this.communicationRepository.delete(communicationId);
+
+    return {
+      message: 'Communication deleted successfully',
     };
   }
 }

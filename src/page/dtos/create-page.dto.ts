@@ -1,13 +1,17 @@
-import { IsNotEmpty, IsNumber, IsObject, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
+import { MultilingualTextDto } from 'src/project-house/dtos/create-project-house.dto';
 
 export class CreatePageDto {
-  @IsObject()
   @IsNotEmpty()
-  title: {
-    en: string;
-    tr: string;
-    ru: string;
-  };
+  @ValidateNested()
+  @Type(() => MultilingualTextDto)
+  title: MultilingualTextDto;
 
   @IsOptional()
   @IsNumber()
