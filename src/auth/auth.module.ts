@@ -7,6 +7,7 @@ import { User } from 'src/user/user.entity';
 import { HashingProvider } from './providers/hashing.provider';
 import { BcryptProvider } from './providers/bcrypt.provider';
 import { GenerateTokensProvider } from './providers/generate-tokens.provider';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   controllers: [AuthController],
@@ -18,7 +19,11 @@ import { GenerateTokensProvider } from './providers/generate-tokens.provider';
     },
     GenerateTokensProvider,
   ],
-  imports: [forwardRef(() => UserModule), TypeOrmModule.forFeature([User])],
-  exports: [AuthService],
+  imports: [
+    forwardRef(() => UserModule),
+    TypeOrmModule.forFeature([User]),
+    MailModule,
+  ],
+  exports: [AuthService, HashingProvider],
 })
 export class AuthModule {}

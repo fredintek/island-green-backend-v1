@@ -48,6 +48,18 @@ export class User {
   })
   role: UserRole;
 
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  resetToken?: string | null;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  resetTokenExpiration?: Date | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

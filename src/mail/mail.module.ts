@@ -37,5 +37,6 @@ import { User } from 'src/user/user.entity';
     }),
     TypeOrmModule.forFeature([User]),
   ],
+  exports: [MailService],
 })
 export class MailModule {}

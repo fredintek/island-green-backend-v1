@@ -1,12 +1,21 @@
 import {
   Injectable,
+  NotFoundException,
   RequestTimeoutException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateUserDto } from 'src/auth/dtos/create-user.dto';
+import { ForgotPasswordDto } from 'src/auth/dtos/forgot-password.dto';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import { MailService } from 'src/mail/providers/mail.service';
+import { VerifyResetPasswordTokenDto } from 'src/auth/dtos/verify-reset-password-token.dto';
+import { ResetPasswordDto } from 'src/auth/dtos/reset-password.dto';
+import { HashingProvider } from 'src/auth/providers/hashing.provider';
+import { UserRoleDto } from '../dto/user-role.dto';
 
 @Injectable()
 export class UserService {
@@ -16,6 +25,16 @@ export class UserService {
      */
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    /**
+     * Injecting Mail Service
+     */
+    private readonly mailService: MailService,
+
+    /**
+     * Inject Hashing Provider
+     */
+    private readonly hashingProvider: HashingProvider,
   ) {}
 
   public async findOneUserByEmail(email: string) {
@@ -61,6 +80,155 @@ export class UserService {
     return {
       message: 'User created successfully',
       data: newUser,
+    };
+  }
+
+  public async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.findOneUserByEmail(forgotPasswordDto.email);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Generate a secure random token
+    const resetToken = crypto.randomBytes(3).toString('hex');
+    const hashedResetToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+    const resetTokenExpiration = new Date();
+    resetTokenExpiration.setHours(resetTokenExpiration.getHours() + 1); // Token expires in 1 hour
+
+    user.resetToken = hashedResetToken;
+    user.resetTokenExpiration = resetTokenExpiration;
+
+    await this.userRepository.save(user);
+
+    // Send email with password reset instructions
+    await this.mailService.sendResetPasswordToken(user, resetToken);
+    return {
+      message: 'Email sent with password reset instructions',
+    };
+  }
+
+  public async verifyResetPasswordToken(
+    verifyResetPasswordTokenDto: VerifyResetPasswordTokenDto,
+  ) {
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(verifyResetPasswordTokenDto.token)
+      .digest('hex');
+    const user = await this.userRepository.findOne({
+      where: {
+        resetToken: hashedToken,
+        resetTokenExpiration: MoreThanOrEqual(new Date()),
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid reset password token');
+    }
+
+    return {
+      message: 'Reset password token is valid',
+      data: {
+        userId: user.id,
+      },
+    };
+  }
+
+  public async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: resetPasswordDto.userId,
+      },
+    });
+
+    if (
+      !user ||
+      !user.resetToken ||
+      (user.resetTokenExpiration &&
+        new Date(user.resetTokenExpiration) < new Date(Date.now()))
+    ) {
+      throw new UnauthorizedException('Invalid token or token has expired');
+    }
+
+    const hashedPassword = await this.hashingProvider.hashPassword(
+      resetPasswordDto.password,
+    );
+    user.password = hashedPassword;
+    user.resetToken = null;
+    user.resetTokenExpiration = null;
+
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Password reset successfully',
+    };
+  }
+
+  public async getAllUsers() {
+    // Get all users
+    const users = await this.userRepository.find({});
+    return {
+      message: 'Users retrieved successfully',
+      data: users,
+    };
+  }
+
+  // get single user
+  public async getSingleUser(userId: number) {
+    // find user with the provided id
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+
+    return {
+      message: 'User retrieved successfully',
+      data: user,
+    };
+  }
+
+  public async updateUserRole(userRoleDto: UserRoleDto) {
+    // find user with the provided id
+    const user = await this.userRepository.findOne({
+      where: { id: userRoleDto.userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with id ${userRoleDto.userId} not found.`,
+      );
+    }
+
+    user.role = userRoleDto.role;
+
+    await this.userRepository.save(user);
+
+    return {
+      message: 'User role updated successfully',
+      data: user,
+    };
+  }
+
+  public async deleteUser(userId: number) {
+    // find user with the provided id
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+
+    await this.userRepository.delete(userId);
+
+    return {
+      message: 'User deleted successfully',
     };
   }
 }

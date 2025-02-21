@@ -6,12 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { SignInDto } from '../dtos/sign-in.dto';
-import { Repository } from 'typeorm';
-import { User } from 'src/user/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from 'src/user/providers/user.service';
 import { HashingProvider } from './hashing.provider';
-import { CreateUserDto } from '../dtos/create-user.dto';
+import { GenerateTokensProvider } from './generate-tokens.provider';
+import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -26,9 +25,19 @@ export class AuthService {
      * Inject Hashing Provider
      */
     private readonly hashingProvider: HashingProvider,
+
+    /**
+     * Inject GlobalConfiguration
+     */
+    private readonly generateTokensProvider: GenerateTokensProvider,
+
+    /**
+     * Injecting Global Configuration
+     */
+    private readonly configService: ConfigService,
   ) {}
 
-  public async signIn(signInDto: SignInDto) {
+  public async signIn(signInDto: SignInDto, res: Response) {
     // Find the user with email
     const user = await this.userService.findOneUserByEmail(signInDto.email);
 
@@ -57,6 +66,45 @@ export class AuthService {
     if (!isEqual) {
       throw new UnauthorizedException('Invalid password');
     }
-    return 'User token';
+
+    const { accessToken, refreshToken } =
+      await this.generateTokensProvider.generateTokens(user);
+
+    // Set refresh token in HttpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly:
+        this.configService.get('appConfig.environment') === 'production',
+      secure: this.configService.get('appConfig.environment') === 'production', // Use secure cookies in production
+      sameSite: 'strict',
+      path: '/',
+      maxAge:
+        Number(this.configService.get('jwt.refreshTokenMaxAge')) *
+        24 *
+        60 *
+        60 *
+        1000,
+    });
+
+    // Send access token in response
+    return res.status(200).json({
+      message: 'Signed in successfully',
+      accessToken,
+    });
+  }
+
+  public async logout(res: Response) {
+    // Clear refresh token cookie
+    res.cookie('refreshToken', '', {
+      httpOnly:
+        this.configService.get('appConfig.environment') === 'production',
+      secure: this.configService.get('appConfig.environment') === 'production',
+      sameSite: 'strict',
+      path: '/',
+      expires: new Date(0), // Expire the cookie immediately
+    });
+
+    return res.status(200).json({
+      message: 'Logged out successfully',
+    });
   }
 }

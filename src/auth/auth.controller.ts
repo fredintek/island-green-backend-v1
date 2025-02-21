@@ -5,6 +5,7 @@ import {
   Inject,
   Patch,
   Post,
+  Res,
 } from '@nestjs/common';
 import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
@@ -12,6 +13,10 @@ import { SignInDto } from './dtos/sign-in.dto';
 import { AuthService } from './providers/auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserService } from 'src/user/providers/user.service';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { VerifyResetPasswordTokenDto } from './dtos/verify-reset-password-token.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -33,22 +38,40 @@ export class AuthController {
    */
   @Post('sign-in')
   @Auth(AuthType.None)
-  public async signIn(@Body() signInDto: SignInDto) {
-    return await this.authService.signIn(signInDto);
+  public async signIn(@Body() signInDto: SignInDto, @Res() res: Response) {
+    return await this.authService.signIn(signInDto, res);
   }
 
   @Post('create')
-  public async createUser(@Body() createUserDto: CreateUserDto) {
-    return await this.userService.createUser(createUserDto);
+  @Auth(AuthType.None)
+  public createUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.createUser(createUserDto);
   }
 
-  @Post('forgot-password')
-  public async forgotPassword() {
-    return 'FORGOT PASSWORD';
+  @Patch('forgot-password')
+  @Auth(AuthType.None)
+  public forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.userService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Post('verify-reset-password-token')
+  @Auth(AuthType.None)
+  public verifyResetPasswordToken(
+    @Body() verifyResetPasswordTokenDto: VerifyResetPasswordTokenDto,
+  ) {
+    return this.userService.verifyResetPasswordToken(
+      verifyResetPasswordTokenDto,
+    );
   }
 
   @Patch('reset-password')
-  public async resetPassword() {
-    return 'RESET PASSWORD';
+  @Auth(AuthType.None)
+  public resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.userService.resetPassword(resetPasswordDto);
+  }
+
+  @Post('logout')
+  public logout(@Res() res: Response) {
+    return this.authService.logout(res);
   }
 }

@@ -19,4 +19,14 @@ export class MailService {
       context: { user },
     });
   }
+
+  public async sendResetPasswordToken(user: User, resetPasswordToken: string) {
+    await this.mailerService.sendMail({
+      to: user.email,
+      from: 'noreply@example.com',
+      subject: 'Reset Password Request',
+      template: './reset-password',
+      context: { user, resetPasswordToken },
+    });
+  }
 }
