@@ -13,6 +13,9 @@ import { UserModule } from './user/user.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import { JwtModule } from '@nestjs/jwt';
+import { MailModule } from './mail/mail.module';
+import jwtConfig from './config/jwt.config';
+import mailConfig from './config/mail.config';
 
 const ENV = process.env.NODE_ENV;
 
@@ -21,7 +24,7 @@ const ENV = process.env.NODE_ENV;
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env.production' : `.env.${ENV}`,
-      load: [appConfig, databaseConfig],
+      load: [appConfig, databaseConfig, jwtConfig, mailConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -57,6 +60,7 @@ const ENV = process.env.NODE_ENV;
     FaqModule,
     AuthModule,
     UserModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

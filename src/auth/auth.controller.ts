@@ -1,4 +1,11 @@
-import { Body, Controller, forwardRef, Inject, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  forwardRef,
+  Inject,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
 import { SignInDto } from './dtos/sign-in.dto';
@@ -33,5 +40,15 @@ export class AuthController {
   @Post('create')
   public async createUser(@Body() createUserDto: CreateUserDto) {
     return await this.userService.createUser(createUserDto);
+  }
+
+  @Post('forgot-password')
+  public async forgotPassword() {
+    return 'FORGOT PASSWORD';
+  }
+
+  @Patch('reset-password')
+  public async resetPassword() {
+    return 'RESET PASSWORD';
   }
 }
