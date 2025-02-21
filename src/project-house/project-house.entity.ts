@@ -75,4 +75,23 @@ export class ProjectHouse {
     };
     tag: string;
   }[];
+
+  @Column({
+    type: 'json',
+    nullable: true,
+  })
+  homeText: {
+    en: string;
+    ru: string;
+    tr: string;
+  };
+
+  @Column({
+    type: 'json',
+    nullable: true,
+  })
+  homeImages: {
+    publicId: string;
+    url: string;
+  }[];
 }

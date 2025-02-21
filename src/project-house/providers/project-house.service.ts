@@ -68,4 +68,47 @@ export class ProjectHouseService {
       data: projectHouse,
     };
   }
+
+  public async deleteProjectHouse(projectHouseId: number) {
+    const projectHouse = await this.projectHouse.findOne({
+      where: { id: projectHouseId },
+    });
+
+    if (!projectHouse) {
+      throw new NotFoundException(
+        `Project house with id ${projectHouseId} not found.`,
+      );
+    }
+
+    await this.projectHouse.remove(projectHouse);
+
+    return {
+      message: 'Project house deleted successfully',
+    };
+  }
+
+  public async getAllProjectHouses() {
+    const projectHouses = await this.projectHouse.find({
+      relations: ['projectPage'],
+    });
+    return projectHouses;
+  }
+
+  public async getProjectHouseById(projectHouseId: number) {
+    const projectHouse = await this.projectHouse.findOne({
+      relations: ['projectPage'],
+      where: { id: projectHouseId },
+    });
+
+    if (!projectHouse) {
+      throw new NotFoundException(
+        `Project house with id ${projectHouseId} not found.`,
+      );
+    }
+
+    return {
+      message: 'Project house found successfully',
+      data: projectHouse,
+    };
+  }
 }

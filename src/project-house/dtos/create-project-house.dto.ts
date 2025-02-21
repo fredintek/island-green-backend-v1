@@ -86,4 +86,15 @@ export class CreateProjectHouseDto {
   @ValidateNested({ each: true })
   @Type(() => GalleryImageDto)
   gallery?: GalleryImageDto[];
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => MultilingualTextDto)
+  homeText: MultilingualTextDto;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ImageUrlDto)
+  homeImages: ImageUrlDto[];
 }
