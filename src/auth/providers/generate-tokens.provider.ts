@@ -34,14 +34,25 @@ export class GenerateTokensProvider {
     const accessToken = await this.signToken<Partial<ActiveUserInterface>>(
       user.id,
       this.configService.get('jwt.expiresIn') as string,
-      { email: user.email },
+      { email: user.email, role: user.role },
     );
 
     const refreshToken = await this.signToken(
       user.id,
       this.configService.get('jwt.refreshTokenExpiresIn') as string,
+      { email: user.email, role: user.role },
     );
 
     return { accessToken, refreshToken };
+  }
+
+  public async generateAccessToken(user: User) {
+    const accessToken = await this.signToken<Partial<ActiveUserInterface>>(
+      user.id,
+      this.configService.get('jwt.expiresIn') as string,
+      { email: user.email, role: user.role },
+    );
+
+    return { accessToken };
   }
 }

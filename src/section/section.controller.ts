@@ -11,6 +11,10 @@ import { SectionService } from './providers/section.service';
 import { CreateSectionDto } from './dtos/create-section.dto';
 import { ContentLinkRemovalDto } from './dtos/remove-link-from-content.dto';
 import { UpdateSectionDto } from './dtos/update-section.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RoleType } from 'src/auth/enums/role-type.enum';
 
 @Controller('section')
 export class SectionController {
@@ -33,6 +37,7 @@ export class SectionController {
    * Update Section Data
    */
   @Patch()
+  @Roles(RoleType.Admin, RoleType.Editor)
   updatePage(@Body() updateSectionDto: UpdateSectionDto) {
     return this.sectionService.updateSection(updateSectionDto);
   }
@@ -41,6 +46,7 @@ export class SectionController {
    * Remove Specific From Section Content
    */
   @Patch('remove-link')
+  @Roles(RoleType.Admin, RoleType.Editor)
   RemoveLinkFromContent(@Body() contentLinkRemovalDto: ContentLinkRemovalDto) {
     return this.sectionService.RemoveLinkFromContent(contentLinkRemovalDto);
   }
@@ -49,6 +55,7 @@ export class SectionController {
    * Get All Section
    */
   @Get('/page/:pageId')
+  @Auth(AuthType.None)
   getAllSectionByPage(@Param('pageId', ParseIntPipe) pageId: number) {
     return this.sectionService.getAllSectionByPage(pageId);
   }
@@ -57,6 +64,7 @@ export class SectionController {
    * Get Single Section
    */
   @Get(':sectionId')
+  @Auth(AuthType.None)
   getSingleSection(@Param('sectionId', ParseIntPipe) sectionId: number) {
     return this.sectionService.getSingleSection(sectionId);
   }

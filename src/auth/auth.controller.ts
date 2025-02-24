@@ -1,10 +1,13 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   forwardRef,
+  Get,
   Inject,
   Patch,
   Post,
+  Req,
   Res,
 } from '@nestjs/common';
 import { Auth } from './decorators/auth.decorator';
@@ -16,7 +19,7 @@ import { UserService } from 'src/user/providers/user.service';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { VerifyResetPasswordTokenDto } from './dtos/verify-reset-password-token.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -54,16 +57,6 @@ export class AuthController {
     return this.userService.forgotPassword(forgotPasswordDto);
   }
 
-  @Post('verify-reset-password-token')
-  @Auth(AuthType.None)
-  public verifyResetPasswordToken(
-    @Body() verifyResetPasswordTokenDto: VerifyResetPasswordTokenDto,
-  ) {
-    return this.userService.verifyResetPasswordToken(
-      verifyResetPasswordTokenDto,
-    );
-  }
-
   @Patch('reset-password')
   @Auth(AuthType.None)
   public resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
@@ -73,5 +66,11 @@ export class AuthController {
   @Post('logout')
   public logout(@Res() res: Response) {
     return this.authService.logout(res);
+  }
+
+  @Get('refresh-token')
+  @Auth(AuthType.None)
+  public async refreshToken(@Req() req: Request, @Res() res: Response) {
+    return this.authService.refreshToken(req, res);
   }
 }

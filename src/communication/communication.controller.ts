@@ -11,6 +11,10 @@ import {
 import { CommunicationService } from './providers/communication.service';
 import { CreateCommunicationDto } from './dtos/create-communication.dto';
 import { UpdateCommunicationDto } from './dtos/update-communication.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RoleType } from 'src/auth/enums/role-type.enum';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('communication')
 export class CommunicationController {
@@ -32,11 +36,13 @@ export class CommunicationController {
   }
 
   @Get()
+  @Auth(AuthType.None)
   getAllCommunication() {
     return this.communicationService.getAllCommunication();
   }
 
   @Get(':communicationId')
+  @Roles(RoleType.Admin, RoleType.Editor)
   getCommunicationById(
     @Param('communicationId', ParseIntPipe) communicationId: number,
   ) {
@@ -44,6 +50,7 @@ export class CommunicationController {
   }
 
   @Patch()
+  @Roles(RoleType.Admin, RoleType.Editor)
   updateCommunication(@Body() updateCommunicationDto: UpdateCommunicationDto) {
     return this.communicationService.updateCommunication(
       updateCommunicationDto,

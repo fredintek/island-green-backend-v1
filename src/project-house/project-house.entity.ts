@@ -87,6 +87,13 @@ export class ProjectHouse {
   };
 
   @Column({
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  isHomePage: boolean;
+
+  @Column({
     type: 'json',
     nullable: true,
   })

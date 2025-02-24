@@ -9,10 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateUserDto } from 'src/auth/dtos/create-user.dto';
 import { ForgotPasswordDto } from 'src/auth/dtos/forgot-password.dto';
-import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { MailService } from 'src/mail/providers/mail.service';
-import { VerifyResetPasswordTokenDto } from 'src/auth/dtos/verify-reset-password-token.dto';
 import { ResetPasswordDto } from 'src/auth/dtos/reset-password.dto';
 import { HashingProvider } from 'src/auth/providers/hashing.provider';
 import { UserRoleDto } from '../dto/user-role.dto';
@@ -84,7 +82,11 @@ export class UserService {
   }
 
   public async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
-    const user = await this.findOneUserByEmail(forgotPasswordDto.email);
+    const user = await this.userRepository.findOne({
+      where: {
+        email: forgotPasswordDto.email,
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -111,36 +113,17 @@ export class UserService {
     };
   }
 
-  public async verifyResetPasswordToken(
-    verifyResetPasswordTokenDto: VerifyResetPasswordTokenDto,
-  ) {
+  public async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const hashedToken = crypto
       .createHash('sha256')
-      .update(verifyResetPasswordTokenDto.token)
+      .update(resetPasswordDto.token)
       .digest('hex');
+
     const user = await this.userRepository.findOne({
       where: {
+        email: resetPasswordDto.email,
         resetToken: hashedToken,
         resetTokenExpiration: MoreThanOrEqual(new Date()),
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid reset password token');
-    }
-
-    return {
-      message: 'Reset password token is valid',
-      data: {
-        userId: user.id,
-      },
-    };
-  }
-
-  public async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const user = await this.userRepository.findOne({
-      where: {
-        id: resetPasswordDto.userId,
       },
     });
 

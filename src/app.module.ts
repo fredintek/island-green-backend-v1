@@ -19,6 +19,7 @@ import mailConfig from './config/mail.config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
+import { RoleGuard } from './auth/guards/role/role.guard';
 
 const ENV = process.env.NODE_ENV;
 
@@ -69,6 +70,7 @@ const ENV = process.env.NODE_ENV;
   providers: [
     AppService,
     AccessTokenGuard,
+    RoleGuard,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
   ],
 })

@@ -38,6 +38,7 @@ export class User {
     type: 'varchar',
     length: 255,
     nullable: true,
+    select: false,
   })
   password: string;
 
@@ -60,12 +61,18 @@ export class User {
   })
   resetTokenExpiration?: Date | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    select: false,
+  })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    select: false,
+  })
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({
+    select: false,
+  })
   deletedAt: Date;
 }

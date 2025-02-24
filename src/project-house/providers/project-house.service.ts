@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateProjectHouseDto } from '../dtos/create-project-house.dto';
 import { Page } from 'src/page/page.entity';
 import { UpdateProjectHouseDto } from '../dtos/update-project-house.dto';
+import { IsHomePageDto } from '../dtos/is-home-page.dto';
 
 @Injectable()
 export class ProjectHouseService {
@@ -87,8 +88,10 @@ export class ProjectHouseService {
     };
   }
 
-  public async getAllProjectHouses() {
+  public async getAllProjectHouses(isHomePage?: boolean) {
+    const whereCondition = isHomePage !== undefined ? { isHomePage } : {};
     const projectHouses = await this.projectHouse.find({
+      where: whereCondition,
       relations: ['projectPage'],
     });
     return projectHouses;
@@ -109,6 +112,25 @@ export class ProjectHouseService {
     return {
       message: 'Project house found successfully',
       data: projectHouse,
+    };
+  }
+
+  public async updateIsHomePage(isHomePageDto: IsHomePageDto) {
+    const projectHouse = await this.projectHouse.findOne({
+      where: { id: isHomePageDto.projectHouseId },
+    });
+
+    if (!projectHouse) {
+      throw new NotFoundException(
+        `Project house with id ${isHomePageDto.projectHouseId} not found.`,
+      );
+    }
+
+    projectHouse.isHomePage = isHomePageDto.isHomePage;
+
+    await this.projectHouse.save(projectHouse);
+    return {
+      message: 'IsHomePage updated successfully',
     };
   }
 }
