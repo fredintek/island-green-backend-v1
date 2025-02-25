@@ -133,7 +133,9 @@ export class UserService {
       (user.resetTokenExpiration &&
         new Date(user.resetTokenExpiration) < new Date(Date.now()))
     ) {
-      throw new UnauthorizedException('Invalid token or token has expired');
+      throw new UnauthorizedException(
+        'Invalid token or token has expired or wrong email address',
+      );
     }
 
     const hashedPassword = await this.hashingProvider.hashPassword(

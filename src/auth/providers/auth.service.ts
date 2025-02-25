@@ -94,7 +94,7 @@ export class AuthService {
       httpOnly:
         this.configService.get('appConfig.environment') === 'production',
       secure: this.configService.get('appConfig.environment') === 'production', // Use secure cookies in production
-      sameSite: 'none',
+      sameSite: 'lax',
       path: '/',
       maxAge:
         Number(this.configService.get('jwt.refreshTokenMaxAge')) *
@@ -104,10 +104,13 @@ export class AuthService {
         1000,
     });
 
+    const { password, resetToken, resetTokenExpiration, ...displayUser } = user;
+
     // Send access token in response
     return res.status(200).json({
       message: 'Signed in successfully',
       accessToken,
+      user: displayUser,
     });
   }
 
@@ -117,7 +120,7 @@ export class AuthService {
       httpOnly:
         this.configService.get('appConfig.environment') === 'production',
       secure: this.configService.get('appConfig.environment') === 'production',
-      sameSite: 'none',
+      sameSite: 'lax',
       path: '/',
       expires: new Date(0), // Expire the cookie immediately
     });

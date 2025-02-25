@@ -20,6 +20,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
 import { RoleGuard } from './auth/guards/role/role.guard';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import cloudinaryConfig from './config/cloudinary.config';
 
 const ENV = process.env.NODE_ENV;
 
@@ -28,7 +30,13 @@ const ENV = process.env.NODE_ENV;
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env.production' : `.env.${ENV}`,
-      load: [appConfig, databaseConfig, jwtConfig, mailConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        jwtConfig,
+        mailConfig,
+        cloudinaryConfig,
+      ],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -65,6 +73,7 @@ const ENV = process.env.NODE_ENV;
     AuthModule,
     UserModule,
     MailModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [

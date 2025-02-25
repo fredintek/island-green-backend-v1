@@ -20,6 +20,8 @@ import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { VerifyResetPasswordTokenDto } from './dtos/verify-reset-password-token.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { Request, Response } from 'express';
+import { Roles } from './decorators/roles.decorator';
+import { RoleType } from './enums/role-type.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -64,6 +66,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Auth(AuthType.None)
   public logout(@Res() res: Response) {
     return this.authService.logout(res);
   }

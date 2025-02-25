@@ -52,7 +52,7 @@ export class SectionController {
   }
 
   /**
-   * Get All Section
+   * Get All Section By Page Id
    */
   @Get('/page/:pageId')
   @Auth(AuthType.None)

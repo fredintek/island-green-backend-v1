@@ -74,7 +74,7 @@ export class SectionService {
   }
 
   /**
-   * Get All Section
+   * Get All Section By Page Id
    */
   public async getAllSectionByPage(pageId: number) {
     // Check if page exists with provided pageId

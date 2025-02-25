@@ -64,7 +64,10 @@ export class AuthenticationGuard implements CanActivate {
 
       if (canActivate) {
         // After authentication, check roles
-        return this.roleGuard.canActivate(context);
+        if (!authTypes.includes(AuthType.None)) {
+          return this.roleGuard.canActivate(context);
+        }
+        return true;
       }
     }
 
