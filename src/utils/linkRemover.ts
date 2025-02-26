@@ -15,7 +15,16 @@ export function linkRemover(target: any, searchString: string): any {
       return target;
     } else {
       // If it's an array of objects, recurse for each item in the array
-      return target.map((item) => linkRemover(item, searchString));
+      // return target.map((item) => linkRemover(item, searchString));
+
+      // If it's an array of objects, remove the object if it contains the search string
+      return target.filter((item) => {
+        if (typeof item === 'object') {
+          // Check if any value in the object contains the search string
+          return !Object.values(item).some((value) => value === searchString);
+        }
+        return true; // Keep the item if it's not an object
+      });
     }
   }
 

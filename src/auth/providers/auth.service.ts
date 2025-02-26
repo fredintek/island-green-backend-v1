@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
   RequestTimeoutException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { SignInDto } from '../dtos/sign-in.dto';
 import { UserService } from 'src/user/providers/user.service';
@@ -61,11 +61,11 @@ export class AuthService {
       .getOne();
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email');
+      throw new BadRequestException('Invalid email');
     }
 
     if (!user.password) {
-      throw new UnauthorizedException('Password not set, use forgot password');
+      throw new BadRequestException('Password not set, use forgot password');
     }
 
     // Compare password to the database hash
@@ -83,7 +83,7 @@ export class AuthService {
     }
 
     if (!isEqual) {
-      throw new UnauthorizedException('Invalid password');
+      throw new BadRequestException('Invalid password');
     }
 
     const { accessToken, refreshToken } =
@@ -135,14 +135,14 @@ export class AuthService {
     const refreshToken = req.cookies['refreshToken'];
 
     if (!refreshToken) {
-      return res.status(403).json({ message: 'forbidden to access' });
+      return res.status(403).json({ message: 'Login expired' });
     }
 
     const secret = this.configService.get('jwt.secret');
     const payload = await this.jwtService.verifyAsync(refreshToken, { secret });
 
     if (!payload || !payload.sub) {
-      return res.status(403).json({ message: 'forbidden to access' });
+      return res.status(403).json({ message: 'Login expired' });
     }
 
     const user = await this.userRepository.findOne({
@@ -150,9 +150,7 @@ export class AuthService {
     });
 
     if (!user) {
-      return res
-        .status(403)
-        .json({ message: 'User not found, forbidden to access' });
+      return res.status(403).json({ message: 'User not found, Login expired' });
     }
 
     const { accessToken } =

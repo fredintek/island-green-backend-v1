@@ -1,5 +1,13 @@
+import slugify from 'slugify';
 import { Page } from 'src/page/page.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+} from 'typeorm';
 
 @Entity()
 export class ProjectHouse {
@@ -18,6 +26,9 @@ export class ProjectHouse {
     ru: string;
     tr: string;
   };
+
+  @Column({ type: 'varchar', length: 255 })
+  slug: string;
 
   @Column({
     type: 'json',
@@ -101,4 +112,12 @@ export class ProjectHouse {
     publicId: string;
     url: string;
   }[];
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  generateSlug() {
+    if (this.title?.en) {
+      this.slug = slugify(this.title.en, { lower: true, trim: true });
+    }
+  }
 }

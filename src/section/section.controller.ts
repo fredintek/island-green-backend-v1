@@ -61,11 +61,29 @@ export class SectionController {
   }
 
   /**
+   * Get All Section By Page Slug
+   */
+  @Get('/page/name/:slug')
+  @Auth(AuthType.None)
+  getAllSectionByPageSlug(@Param('slug') slug: string) {
+    return this.sectionService.getAllSectionByPageSlug(slug);
+  }
+
+  /**
    * Get Single Section
    */
   @Get(':sectionId')
   @Auth(AuthType.None)
   getSingleSection(@Param('sectionId', ParseIntPipe) sectionId: number) {
     return this.sectionService.getSingleSection(sectionId);
+  }
+
+  /**
+   * Get Single Section By Type
+   */
+  @Get('type/:sectionType')
+  @Auth(AuthType.None)
+  getSingleSectionByType(@Param('sectionType') sectionType: string) {
+    return this.sectionService.getSingleSectionByType(sectionType);
   }
 }

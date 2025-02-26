@@ -130,7 +130,7 @@ export class ProjectHouseService {
 
     await this.projectHouse.save(projectHouse);
     return {
-      message: 'IsHomePage updated successfully',
+      message: 'Project updated successfully',
     };
   }
 }

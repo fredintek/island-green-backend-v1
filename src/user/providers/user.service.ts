@@ -1,8 +1,8 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   RequestTimeoutException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -49,7 +49,7 @@ export class UserService {
     }
 
     if (!user) {
-      throw new UnauthorizedException('user does not exist');
+      throw new BadRequestException('user does not exist');
     }
     return user;
   }
@@ -63,7 +63,7 @@ export class UserService {
     });
 
     if (user) {
-      throw new UnauthorizedException('User already exists');
+      throw new BadRequestException('User already exists');
     }
 
     try {
@@ -89,7 +89,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new BadRequestException('User not found');
     }
 
     // Generate a secure random token
@@ -133,7 +133,7 @@ export class UserService {
       (user.resetTokenExpiration &&
         new Date(user.resetTokenExpiration) < new Date(Date.now()))
     ) {
-      throw new UnauthorizedException(
+      throw new BadRequestException(
         'Invalid token or token has expired or wrong email address',
       );
     }

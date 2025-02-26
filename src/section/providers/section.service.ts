@@ -46,23 +46,40 @@ export class SectionService {
         );
       }
 
-      // Create a new Section instance and save it to the database
-      const newSection = this.sectionRepository.create({
-        ...createSectionDto,
-        page: foundPage,
+      // find if section type exists
+      const foundSectionType = await this.sectionRepository.findOne({
+        where: {
+          type: createSectionDto.type,
+          page: {
+            id: createSectionDto.page,
+          },
+        },
       });
 
-      await this.sectionRepository.save(newSection);
-      return {
-        message: 'Section created successfully',
-        data: newSection,
-      };
+      // if section type exists update section else create new section
+      if (foundSectionType) {
+        foundSectionType.sortId = createSectionDto.sortId;
+        foundSectionType.content = createSectionDto.content;
+        await this.sectionRepository.save(foundSectionType);
+        return {
+          message: 'Section updated successfully',
+          data: foundSectionType,
+        };
+      } else {
+        // Create a new Section instance and save it to the database
+        const newSection = this.sectionRepository.create({
+          ...createSectionDto,
+          page: foundPage,
+        });
+
+        await this.sectionRepository.save(newSection);
+        return {
+          message: 'Section created successfully',
+          data: newSection,
+        };
+      }
     } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException(
-          'A section with this type already exists.',
-        );
-      } else if (error instanceof NotFoundException) {
+      if (error instanceof NotFoundException) {
         throw error;
       } else {
         console.error('Unexpected Error:', error);
@@ -70,6 +87,11 @@ export class SectionService {
           'Something went wrong while creating the section.',
         );
       }
+      // if (error.code === 'ER_DUP_ENTRY') {
+      //   throw new BadRequestException(
+      //     'A section with this type already exists.',
+      //   );
+      // }
     }
   }
 
@@ -89,6 +111,30 @@ export class SectionService {
     // get all section by provided pageId
     const sections = await this.sectionRepository.find({
       where: { page: { id: pageId } },
+    });
+
+    return {
+      message: 'Sections retrieved successfully',
+      data: sections,
+    };
+  }
+
+  /**
+   * Get All Section By Page slug
+   */
+  public async getAllSectionByPageSlug(slug: string) {
+    // Check if page exists with provided pageId
+    const page = await this.pageRepository.findOne({
+      where: { slug },
+    });
+
+    if (!page) {
+      throw new NotFoundException(`Page with name ${slug} not found.`);
+    }
+
+    // get all section by provided pageId
+    const sections = await this.sectionRepository.find({
+      where: { page: { slug } },
     });
 
     return {
@@ -173,5 +219,28 @@ export class SectionService {
         error.status || error.response.statusCode,
       );
     }
+  }
+
+  /**
+   * Get Single Section By Type
+   */
+  public async getSingleSectionByType(sectionType: string) {
+    // find section with the provided id
+    const section = await this.sectionRepository.findOne({
+      where: { type: sectionType },
+      relations: ['page'],
+    });
+
+    if (!section) {
+      throw new NotFoundException(
+        `Section with type ${sectionType} not found.`,
+      );
+    }
+
+    // return the found section
+    return {
+      message: 'Section retrieved successfully',
+      data: section,
+    };
   }
 }
