@@ -39,7 +39,7 @@ class GalleryImageDto {
   @Type(() => ImageUrlDto)
   imageUrl: ImageUrlDto;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   tag: string;
 }

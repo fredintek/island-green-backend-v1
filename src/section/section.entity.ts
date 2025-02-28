@@ -19,7 +19,6 @@ export class Section {
   @Column({
     type: 'int',
     nullable: false,
-    unique: true,
   })
   sortId: number;
 

@@ -48,6 +48,12 @@ export class PageController {
     return this.pageService.fetchSinglePage(id);
   }
 
+  @Get('name/:slug')
+  @Auth(AuthType.None)
+  fetchPageBySlug(@Param('slug') slug: string) {
+    return this.pageService.fetchPageBySlug(slug);
+  }
+
   @Delete(':id')
   deleteSinglePage(@Param('id', ParseIntPipe) id: number) {
     return this.pageService.deleteSinglePage(id);

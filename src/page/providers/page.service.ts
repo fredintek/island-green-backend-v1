@@ -90,11 +90,19 @@ export class PageService {
   }
 
   public async fetchSinglePage(id: number) {
-    const pages = await this.pageRepository.find({
+    const pages = await this.pageRepository.findOne({
       where: { id },
       relations: ['subPages', 'parentPage', 'projectHouse'],
     });
     return pages;
+  }
+
+  public async fetchPageBySlug(slug: string) {
+    const page = await this.pageRepository.findOne({
+      where: { slug },
+      relations: ['subPages', 'parentPage', 'projectHouse', 'sections'],
+    });
+    return page;
   }
 
   public async fetchAllPages() {

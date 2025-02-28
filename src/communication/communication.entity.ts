@@ -6,23 +6,20 @@ export class Communication {
   id: number;
 
   @Column({
-    type: 'text',
+    type: 'json',
     nullable: false,
-    default: '[]',
   })
-  phoneNumber: string;
+  phoneNumber: string[];
 
   @Column({
-    type: 'text',
+    type: 'json',
     nullable: false,
-    default: '[]',
   })
-  email: string;
+  email: string[];
 
   @Column({
-    type: 'text',
+    type: 'json',
     nullable: false,
-    default: '[]',
   })
-  address: string;
+  address: string[];
 }

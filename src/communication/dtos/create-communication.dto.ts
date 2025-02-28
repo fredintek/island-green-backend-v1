@@ -2,26 +2,14 @@ import {
   IsArray,
   IsEmail,
   IsOptional,
+  IsPhoneNumber,
   IsString,
-  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-
-class PhoneNumberDto {
-  @IsString()
-  number: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tags?: string[];
-}
 
 export class CreateCommunicationDto {
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PhoneNumberDto)
-  phoneNumber: PhoneNumberDto[];
+  @IsPhoneNumber(undefined, { each: true })
+  phoneNumber: string[];
 
   @IsArray()
   @IsEmail({}, { each: true })

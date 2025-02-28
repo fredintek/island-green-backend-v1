@@ -22,9 +22,9 @@ export class CommunicationService {
     createCommunicationDto: CreateCommunicationDto,
   ) {
     const communication = this.communicationRepository.create({
-      phoneNumber: JSON.stringify(createCommunicationDto.phoneNumber),
-      email: JSON.stringify(createCommunicationDto.email),
-      address: JSON.stringify(createCommunicationDto.address),
+      phoneNumber: createCommunicationDto.phoneNumber,
+      email: createCommunicationDto.email,
+      address: createCommunicationDto.address,
     });
 
     await this.communicationRepository.save(communication);
@@ -85,21 +85,15 @@ export class CommunicationService {
 
     // Update fields only if provided in DTO
     if (updateCommunicationDto.phoneNumber) {
-      existingCommunication.phoneNumber = JSON.stringify(
-        updateCommunicationDto.phoneNumber,
-      );
+      existingCommunication.phoneNumber = updateCommunicationDto.phoneNumber;
     }
 
     if (updateCommunicationDto.email) {
-      existingCommunication.email = JSON.stringify(
-        updateCommunicationDto.email,
-      );
+      existingCommunication.email = updateCommunicationDto.email;
     }
 
     if (updateCommunicationDto.address) {
-      existingCommunication.address = JSON.stringify(
-        updateCommunicationDto.address,
-      );
+      existingCommunication.address = updateCommunicationDto.address;
     }
 
     await this.communicationRepository.save(existingCommunication);

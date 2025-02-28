@@ -84,7 +84,7 @@ export class ProjectHouse {
       publicId: string;
       url: string;
     };
-    tag: string;
+    tag?: string;
   }[];
 
   @Column({
