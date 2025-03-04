@@ -23,7 +23,7 @@ export class MultilingualTextDto {
   tr: string;
 }
 
-class ImageUrlDto {
+export class ImageUrlDto {
   @IsNotEmpty()
   @IsString()
   publicId: string;
@@ -33,7 +33,7 @@ class ImageUrlDto {
   url: string;
 }
 
-class GalleryImageDto {
+export class GalleryImageDto {
   @IsNotEmpty()
   @IsObject()
   @Type(() => ImageUrlDto)

@@ -2,13 +2,19 @@ import {
   BadRequestException,
   HttpException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
+  RequestTimeoutException,
 } from '@nestjs/common';
-import { IsNull, Repository } from 'typeorm';
+import { DataSource, IsNull, QueryRunner, Repository } from 'typeorm';
 import { Page } from '../page.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePageDto } from '../dtos/create-page.dto';
 import { UpdatePageDto } from '../dtos/update-page.dto';
+import { CreateBulkProjectDto } from '../dtos/createBulkProject.dto';
+import { Section } from 'src/section/section.entity';
+import { ProjectHouse } from 'src/project-house/project-house.entity';
+import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
 
 @Injectable()
 export class PageService {
@@ -19,6 +25,28 @@ export class PageService {
 
     @InjectRepository(Page)
     private readonly pageRepository: Repository<Page>,
+
+    /**
+     * Injecting Section Repository
+     */
+    @InjectRepository(Section)
+    private readonly sectionRepository: Repository<Section>,
+
+    /**
+     * Injecting Project House Repository
+     */
+    @InjectRepository(ProjectHouse)
+    private readonly projectHouseRepository: Repository<ProjectHouse>,
+
+    /**
+     * Injecting Datasource
+     */
+    private readonly datasource: DataSource,
+
+    /**
+     * Injecting Cloudinary Service
+     */
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   public async createPage(createPageDto: CreatePageDto) {
@@ -51,6 +79,134 @@ export class PageService {
         error.message,
         error.status || error.response.statusCode,
       );
+    }
+  }
+
+  public async createBulkProject(createBulkProjectDto: CreateBulkProjectDto) {
+    // console.log('createBulkProjectDto --->', createBulkProjectDto);
+    const queryRunner = this.datasource.createQueryRunner();
+
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      /**
+       * Create a new project page with the page title and parent page (first find parent page)
+       */
+      const parentPage = createBulkProjectDto.parentPageId
+        ? await queryRunner.manager.findOne(Page, {
+            where: { id: createBulkProjectDto.parentPageId },
+          })
+        : null;
+
+      if (!parentPage) {
+        throw new BadRequestException('Invalid parent page ID');
+      }
+
+      const projectPage = queryRunner.manager.create(Page, {
+        title: createBulkProjectDto.projectTitle,
+        parentPage,
+      });
+
+      await queryRunner.manager.save(projectPage);
+
+      /**
+       * Identify sections if any from createBulkProjectDto and create them for the new page
+       */
+
+      //product link
+      const productLink = await queryRunner.manager.create(Section, {
+        page: projectPage,
+        type: 'project-product-link',
+        sortId: 0,
+        content: createBulkProjectDto.productLink,
+      });
+
+      await queryRunner.manager.save(productLink);
+
+      // project content
+      const projectContent = await queryRunner.manager.create(Section, {
+        page: projectPage,
+        type: 'project-content',
+        sortId: 1,
+        content: {
+          image: createBulkProjectDto.projectImage,
+          pdf: createBulkProjectDto.projectPdf,
+          description: createBulkProjectDto.projectContent,
+        },
+      });
+      await queryRunner.manager.save(projectContent);
+
+      // stage 2 section
+      const stage2Images = createBulkProjectDto.stage2Images
+        ? await queryRunner.manager.create(Section, {
+            page: projectPage,
+            type: 'project-stage2-images',
+            sortId: 2,
+            content: createBulkProjectDto.stage2Images,
+          })
+        : null;
+      stage2Images && (await queryRunner.manager.save(stage2Images));
+
+      // project location
+      const projectLocation = createBulkProjectDto.projectLocation
+        ? await queryRunner.manager.create(Section, {
+            page: projectPage,
+            type: 'project-location',
+            sortId: 3,
+            content: createBulkProjectDto.projectLocation,
+          })
+        : null;
+      projectLocation && (await queryRunner.manager.save(projectLocation));
+
+      // project youtube videos
+      const youtubeVideos = createBulkProjectDto.youtubeVideos
+        ? await queryRunner.manager.create(Section, {
+            page: projectPage,
+            type: 'project-youtube-videos',
+            sortId: 4,
+            content: createBulkProjectDto.youtubeVideos,
+          })
+        : null;
+      youtubeVideos && (await queryRunner.manager.save(youtubeVideos));
+
+      /**
+       * Identify project house if any and create them for the new project page
+       */
+      const projectHouse = await queryRunner.manager.create(ProjectHouse, {
+        projectPage,
+        title: createBulkProjectDto.projectHouseTitle,
+        coverImage: createBulkProjectDto.projectHouseCoverImage,
+        displayImage: createBulkProjectDto.projectHouseDisplayImage,
+        generalInfo: createBulkProjectDto.projectGeneralInfo,
+        features: createBulkProjectDto.projectFeatures,
+        homeText: createBulkProjectDto.projectHomeContent,
+        homeImages: createBulkProjectDto.projectHomeImage,
+        optionalFeatures: createBulkProjectDto.optionalProjectFeatures,
+        gallery: createBulkProjectDto.projectHouseGallery,
+      });
+      await queryRunner.manager.save(projectHouse);
+
+      // After successful transaction
+      await queryRunner.commitTransaction();
+
+      return {
+        message: 'Bulk project created successfully',
+        projectPageId: projectPage.id,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status || 500);
+    } finally {
+      try {
+        // release connection
+        await queryRunner.release();
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not release connection transaction',
+          { description: String(error) },
+        );
+      }
     }
   }
 
@@ -92,7 +248,7 @@ export class PageService {
   public async fetchSinglePage(id: number) {
     const pages = await this.pageRepository.findOne({
       where: { id },
-      relations: ['subPages', 'parentPage', 'projectHouse'],
+      relations: ['subPages', 'parentPage', 'projectHouse', 'sections'],
     });
     return pages;
   }
@@ -118,5 +274,91 @@ export class PageService {
   public async deleteSinglePage(id: number) {
     const deletedPage = await this.pageRepository.delete({ id });
     return deletedPage;
+  }
+
+  public async deleteBulkProject(id: number) {
+    const queryRunner: QueryRunner = this.datasource.createQueryRunner();
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      // fetch the page along with the sections and project houses
+      const page = await queryRunner.manager.findOne(Page, {
+        where: { id },
+        relations: ['sections', 'projectHouse'],
+      });
+
+      if (!page) {
+        throw new NotFoundException(`Page with ID ${id} not found`);
+      }
+
+      const publicIdsToDelete: string[] = [];
+
+      // Check Project House for images
+      for (const projectHouse of page.projectHouse) {
+        if (projectHouse.coverImage?.publicId) {
+          publicIdsToDelete.push(projectHouse.coverImage.publicId);
+        }
+        if (projectHouse.displayImage?.publicId) {
+          publicIdsToDelete.push(projectHouse.displayImage.publicId);
+        }
+        if (projectHouse.gallery) {
+          for (const galleryItem of projectHouse.gallery) {
+            if (galleryItem.imageUrl?.publicId) {
+              publicIdsToDelete.push(galleryItem.imageUrl.publicId);
+            }
+          }
+        }
+        if (projectHouse.homeImages) {
+          for (const homeImage of projectHouse.homeImages) {
+            if (homeImage.publicId) {
+              publicIdsToDelete.push(homeImage.publicId);
+            }
+          }
+        }
+      }
+
+      // Check Sections for images (assuming sections.content may contain images)
+      for (const section of page.sections) {
+        if (section.content && Array.isArray(section.content)) {
+          for (const contentItem of section.content) {
+            if (contentItem?.publicId) {
+              publicIdsToDelete.push(contentItem.publicId);
+            }
+          }
+        }
+      }
+
+      try {
+        // Delete images from Cloudinary
+        for (const publicId of publicIdsToDelete) {
+          await this.cloudinaryService.deleteImage({ publicId });
+        }
+      } catch (error) {
+        throw new InternalServerErrorException(
+          'Failed to delete images from cloud',
+        );
+      }
+
+      // Delete the page and its related entities using QueryRunner
+      await queryRunner.manager.delete(Page, { id });
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+
+      return { message: 'Project deleted successfully' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction(); // Rollback on error
+      throw error;
+    } finally {
+      try {
+        await queryRunner.release();
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not release connection transaction',
+          { description: String(error) },
+        );
+      }
+    }
   }
 }

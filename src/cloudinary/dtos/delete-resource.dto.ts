@@ -7,5 +7,5 @@ export class DeleteResourceDto {
 
   @IsOptional()
   @IsString()
-  resourceType?: 'image' | 'video';
+  resourceType?: 'image' | 'video' | 'raw';
 }

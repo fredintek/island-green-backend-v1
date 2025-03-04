@@ -15,6 +15,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RoleType } from 'src/auth/enums/role-type.enum';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
+import { CreateBulkProjectDto } from './dtos/createBulkProject.dto';
 
 @Controller('page')
 export class PageController {
@@ -28,6 +29,16 @@ export class PageController {
   @Post()
   createPage(@Body() createPageDto: CreatePageDto) {
     return this.pageService.createPage(createPageDto);
+  }
+
+  @Post('bulk-project')
+  createBulkProject(@Body() createBulkProjectDto: CreateBulkProjectDto) {
+    return this.pageService.createBulkProject(createBulkProjectDto);
+  }
+
+  @Delete('bulk-project/:id')
+  deleteBulkProject(@Param('id', ParseIntPipe) id: number) {
+    return this.pageService.deleteBulkProject(id);
   }
 
   @Patch()
