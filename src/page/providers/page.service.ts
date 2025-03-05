@@ -15,6 +15,10 @@ import { CreateBulkProjectDto } from '../dtos/createBulkProject.dto';
 import { Section } from 'src/section/section.entity';
 import { ProjectHouse } from 'src/project-house/project-house.entity';
 import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
+import { Create360PageDto } from '../dtos/create-360-page.dto';
+import { Update360PageDto } from '../dtos/update-360-page.dto';
+import { CreateBulkAboutPageDto } from '../dtos/create-about-page.dto';
+import { UpdateBulkAboutPageDto } from '../dtos/update-about-page.dto';
 
 @Injectable()
 export class PageService {
@@ -193,6 +197,242 @@ export class PageService {
       return {
         message: 'Bulk project created successfully',
         projectPageId: projectPage.id,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status || 500);
+    } finally {
+      try {
+        // release connection
+        await queryRunner.release();
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not release connection transaction',
+          { description: String(error) },
+        );
+      }
+    }
+  }
+
+  public async create360Page(create360PageDto: Create360PageDto) {
+    const queryRunner = this.datasource.createQueryRunner();
+
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      // get parent page and make sure it exists
+      const parentPage = await queryRunner.manager.findOne(Page, {
+        where: { id: create360PageDto.parentPageId },
+      });
+
+      if (!parentPage) {
+        throw new BadRequestException(
+          `Parent page with ID ${create360PageDto.parentPageId} not found`,
+        );
+      }
+
+      // now create page with parentpageID and title
+      const newPage = queryRunner.manager.create(Page, {
+        title: create360PageDto.title,
+        parentPage,
+      });
+
+      await queryRunner.manager.save(newPage);
+
+      // create section for the new page with product link
+      const productLinkSection = await queryRunner.manager.create(Section, {
+        page: newPage,
+        type: '360-product-link',
+        sortId: 0,
+        content: create360PageDto.productLink,
+      });
+      await queryRunner.manager.save(productLinkSection);
+
+      // now commit and return
+      await queryRunner.commitTransaction();
+
+      return {
+        message: '360 Page created successfully',
+        pageId: newPage.id,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status || 500);
+    } finally {
+      try {
+        // release connection
+        await queryRunner.release();
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not release connection transaction',
+          { description: String(error) },
+        );
+      }
+    }
+  }
+
+  public async createBulkAboutPage(
+    createBulkAboutPage: CreateBulkAboutPageDto,
+  ) {
+    const queryRunner = this.datasource.createQueryRunner();
+
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      // get parent page and make sure it exists
+      const parentPage = await queryRunner.manager.findOne(Page, {
+        where: { id: createBulkAboutPage.parentPageId },
+      });
+
+      if (!parentPage) {
+        throw new BadRequestException(
+          `Parent page with ID ${createBulkAboutPage.parentPageId} not found`,
+        );
+      }
+
+      // now create page with parentpageID and title
+      const newPage = queryRunner.manager.create(Page, {
+        title: createBulkAboutPage.title,
+        parentPage,
+      });
+
+      await queryRunner.manager.save(newPage);
+
+      // create section for the new page with product link
+      const productLinkSection = await queryRunner.manager.create(Section, {
+        page: newPage,
+        type: createBulkAboutPage.sectionType,
+        sortId: 0,
+        content: createBulkAboutPage.content,
+      });
+      await queryRunner.manager.save(productLinkSection);
+
+      // now commit and return
+      await queryRunner.commitTransaction();
+
+      return {
+        message: 'About Page created successfully',
+        pageId: newPage.id,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status || 500);
+    } finally {
+      try {
+        // release connection
+        await queryRunner.release();
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not release connection transaction',
+          { description: String(error) },
+        );
+      }
+    }
+  }
+
+  public async update360Page(update360PageDto: Update360PageDto) {
+    const queryRunner = this.datasource.createQueryRunner();
+
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      // get parent page and make sure it exists
+      const targetPage = await queryRunner.manager.findOne(Page, {
+        where: { id: update360PageDto.id },
+      });
+
+      if (!targetPage) {
+        throw new BadRequestException(
+          `Target page with ID ${update360PageDto.id} not found`,
+        );
+      }
+
+      targetPage.title = update360PageDto.title || targetPage.title;
+      await queryRunner.manager.save(targetPage);
+
+      // get section with the section type and update the section
+      const sectionToUpdate = await queryRunner.manager.findOne(Section, {
+        where: { type: update360PageDto.sectionType },
+      });
+
+      if (!sectionToUpdate) {
+        throw new BadRequestException(
+          `Section with type ${update360PageDto.sectionType} not found for page ID ${update360PageDto.id}`,
+        );
+      }
+
+      sectionToUpdate.content =
+        update360PageDto.productLink || sectionToUpdate.content;
+      await queryRunner.manager.save(sectionToUpdate);
+
+      // now commit and return
+
+      await queryRunner.commitTransaction();
+
+      return {
+        message: '360 Page updated successfully',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status || 500);
+    } finally {
+      try {
+        // release connection
+        await queryRunner.release();
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Could not release connection transaction',
+          { description: String(error) },
+        );
+      }
+    }
+  }
+
+  public async updateBulkAboutPage(
+    updateBulkAboutPageDto: UpdateBulkAboutPageDto,
+  ) {
+    const queryRunner = this.datasource.createQueryRunner();
+
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      // get parent page and make sure it exists
+      const targetPage = await queryRunner.manager.findOne(Page, {
+        where: { id: updateBulkAboutPageDto.id },
+      });
+
+      if (!targetPage) {
+        throw new BadRequestException(
+          `Target page with ID ${updateBulkAboutPageDto.id} not found`,
+        );
+      }
+
+      targetPage.title = updateBulkAboutPageDto.title || targetPage.title;
+      await queryRunner.manager.save(targetPage);
+
+      // get section with the section type and update the section
+      const sectionToUpdate = await queryRunner.manager.findOne(Section, {
+        where: { type: updateBulkAboutPageDto.sectionType },
+      });
+
+      if (!sectionToUpdate) {
+        throw new BadRequestException(
+          `Section with type ${updateBulkAboutPageDto.sectionType} not found for page ID ${updateBulkAboutPageDto.id}`,
+        );
+      }
+
+      sectionToUpdate.content =
+        updateBulkAboutPageDto.content || sectionToUpdate.content;
+      sectionToUpdate.type =
+        updateBulkAboutPageDto.sectionType || sectionToUpdate.type;
+      await queryRunner.manager.save(sectionToUpdate);
+
+      // now commit and return
+
+      await queryRunner.commitTransaction();
+
+      return {
+        message: 'About Updated created successfully',
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
