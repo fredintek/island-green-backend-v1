@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   forwardRef,
   Get,
@@ -17,9 +16,9 @@ import { AuthService } from './providers/auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UserService } from 'src/user/providers/user.service';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
-import { VerifyResetPasswordTokenDto } from './dtos/verify-reset-password-token.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { Request, Response } from 'express';
+import { UpdateUserDto } from './dtos/update-user.dto';
 import { Roles } from './decorators/roles.decorator';
 import { RoleType } from './enums/role-type.enum';
 
@@ -48,9 +47,15 @@ export class AuthController {
   }
 
   @Post('create')
-  @Auth(AuthType.None)
+  @Roles(RoleType.Admin)
   public createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
+  }
+
+  @Patch('user-update')
+  @Roles(RoleType.Admin)
+  public updateUser(@Body() updateUserDto: UpdateUserDto) {
+    return this.userService.updateUser(updateUserDto);
   }
 
   @Patch('forgot-password')

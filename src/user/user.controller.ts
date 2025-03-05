@@ -41,6 +41,7 @@ export class UserController {
 
   // delete user
   @Delete(':userId')
+  @Roles(RoleType.Admin)
   deleteUser(@Param('userId') userId: number) {
     return this.userService.deleteUser(userId);
   }

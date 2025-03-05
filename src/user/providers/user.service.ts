@@ -14,6 +14,7 @@ import { MailService } from 'src/mail/providers/mail.service';
 import { ResetPasswordDto } from 'src/auth/dtos/reset-password.dto';
 import { HashingProvider } from 'src/auth/providers/hashing.provider';
 import { UserRoleDto } from '../dto/user-role.dto';
+import { UpdateUserDto } from 'src/auth/dtos/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -55,6 +56,7 @@ export class UserService {
   }
 
   public async createUser(createUserDto: CreateUserDto) {
+    console.log('createUserDto ->', createUserDto);
     let newUser: User;
 
     // check if user already exists
@@ -78,6 +80,33 @@ export class UserService {
     return {
       message: 'User created successfully',
       data: newUser,
+    };
+  }
+
+  public async updateUser(updateUserDto: UpdateUserDto) {
+    // check if user exists
+    const user = await this.userRepository.findOne({
+      where: { id: updateUserDto.userId },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User does not exists');
+    }
+
+    try {
+      user.firstname = updateUserDto.firstname || user.firstname;
+      user.lastname = updateUserDto.lastname || user.lastname;
+      user.role = updateUserDto.role || user.role;
+      await this.userRepository.save(user);
+    } catch (error) {
+      throw new RequestTimeoutException('error', {
+        description: 'Could not update user',
+      });
+    }
+
+    return {
+      message: 'User updated successfully',
+      data: user,
     };
   }
 
