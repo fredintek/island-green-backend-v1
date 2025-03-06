@@ -1,0 +1,19 @@
+FROM node:22
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN npm install
+
+EXPOSE 1111
+
+CMD [ "npm", "run", "start:dev" ]
+
+# to build the docker image
+# --> docker build -t island-green-backend-dev -f Dockerfile.dev .
+
+# to run docker image
+# --> docker run -p 1111:1111 island-green-backend-dev
+
+# for live reload on the docker container with need to setup docker compose

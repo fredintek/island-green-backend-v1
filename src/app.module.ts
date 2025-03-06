@@ -44,7 +44,7 @@ const ENV = process.env.NODE_ENV;
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
         port: +configService.get('database.port'),
         host: configService.get('database.host'),
         username: configService.get('database.username'),

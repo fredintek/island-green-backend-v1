@@ -1,0 +1,19 @@
+FROM node:22
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN npm install
+
+RUN npm run build
+
+EXPOSE 2222
+
+CMD [ "npm", "run", "start:prod" ]
+
+# to build the docker image
+# --> docker build -t island-green-backend-prod -f Dockerfile.prod .
+
+# to run docker image
+# --> docker run -p 1111:2222 island-green-backend-prod
