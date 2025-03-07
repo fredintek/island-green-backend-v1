@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   RequestTimeoutException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { SignInDto } from '../dtos/sign-in.dto';
 import { UserService } from 'src/user/providers/user.service';
@@ -105,7 +106,6 @@ export class AuthService {
     });
 
     const { password, resetToken, resetTokenExpiration, ...displayUser } = user;
-
     // Send access token in response
     return res.status(200).json({
       message: 'Signed in successfully',
@@ -141,12 +141,12 @@ export class AuthService {
     const secret = this.configService.get('jwt.secret');
     const payload = await this.jwtService.verifyAsync(refreshToken, { secret });
 
-    if (!payload || !payload.sub) {
+    if (!payload?.sub) {
       return res.status(403).json({ message: 'Login expired' });
     }
 
     const user = await this.userRepository.findOne({
-      where: { id: payload.userId },
+      where: { id: payload.sub },
     });
 
     if (!user) {
@@ -160,5 +160,23 @@ export class AuthService {
       message: 'Refreshed successfully',
       accessToken,
     });
+  }
+
+  public async verifyRefreshToken(data: {
+    refreshToken: string;
+  }): Promise<boolean> {
+    try {
+      const decoded = this.jwtService.verify(data.refreshToken, {
+        secret: this.configService.get('jwt.secret'),
+      });
+
+      if (!decoded) {
+        throw new UnauthorizedException('invalid refresh token');
+      }
+
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

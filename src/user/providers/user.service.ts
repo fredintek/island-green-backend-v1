@@ -56,7 +56,6 @@ export class UserService {
   }
 
   public async createUser(createUserDto: CreateUserDto) {
-    console.log('createUserDto ->', createUserDto);
     let newUser: User;
 
     // check if user already exists

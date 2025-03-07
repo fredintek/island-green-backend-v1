@@ -11,6 +11,8 @@ import { UserService } from './providers/user.service';
 import { UserRoleDto } from './dto/user-role.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RoleType } from 'src/auth/enums/role-type.enum';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('user')
 export class UserController {
@@ -41,6 +43,7 @@ export class UserController {
 
   // delete user
   @Delete(':userId')
+  @Auth(AuthType.Bearer)
   @Roles(RoleType.Admin)
   deleteUser(@Param('userId') userId: number) {
     return this.userService.deleteUser(userId);

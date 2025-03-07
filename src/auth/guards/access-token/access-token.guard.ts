@@ -28,7 +28,7 @@ export class AccessTokenGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     // Extract the access token from the request
-    const accessToken = this.extractRequestFromHeader(request);
+    const accessToken = this.extractTokenFromHeader(request);
 
     // Check if the access token exists
     if (!accessToken) {
@@ -53,18 +53,17 @@ export class AccessTokenGuard implements CanActivate {
     return true;
   }
 
-  private extractRequestFromHeader(request: Request): string | null {
+  private extractTokenFromHeader(request: Request): string | null {
     // Get the authorization header from the request
     const authorizationHeader = request.headers.authorization;
 
     // Check if the authorization header exists
-    if (!authorizationHeader) {
+    if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
       return null;
     }
 
     // Split the authorization header into 'Bearer' and the access token
-    const [_, accessToken] = authorizationHeader.split(' ');
-
-    return accessToken;
+    const token = authorizationHeader.split(' ')[1]?.trim();
+    return token || null;
   }
 }

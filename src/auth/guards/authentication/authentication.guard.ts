@@ -58,41 +58,15 @@ export class AuthenticationGuard implements CanActivate {
 
       if (!guard) continue; // If an invalid auth type is encountered, skip
 
-      const canActivate = await Promise.resolve(
-        guard.canActivate(context),
-      ).catch(() => false);
-
-      if (canActivate) {
-        // After authentication, check roles
-        if (!authTypes.includes(AuthType.None)) {
+      try {
+        if (await guard.canActivate(context)) {
           return this.roleGuard.canActivate(context);
         }
-        return true;
+      } catch (error) {
+        throw new UnauthorizedException();
       }
     }
 
     throw new UnauthorizedException();
-
-    // Create an array of guards
-    // const guards = authTypes
-    //   .map((authType: number) => this.authTypeGuardMap[authType])
-    //   .flat(Infinity);
-
-    // Return true if any guard can activate the context
-    // for (const guard of guards) {
-    //   const canActivate = await Promise.resolve(
-    //     guard.canActivate(context),
-    //   ).catch((err) => {
-    //     error: err;
-    //   });
-
-    //   if (canActivate) {
-    //     // Check if AuthType.None is included in the authTypes; if it's there, skip role check
-    //     if (!authTypes.includes(AuthType.None)) {
-    //       return this.roleGuard.canActivate(context); // Check roles
-    //     }
-    //     return true; // No need to check roles if AuthType.None is included
-    //   }
-    // }
   }
 }

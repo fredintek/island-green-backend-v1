@@ -1,8 +1,8 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
@@ -32,7 +32,7 @@ export class RoleGuard implements CanActivate {
 
     // Check if user has any of the required roles
     if (!user || !requiredRoles.includes(user.role)) {
-      throw new UnauthorizedException('You cannot perform this action');
+      throw new ForbiddenException('You cannot perform this action');
     }
 
     return true;

@@ -78,7 +78,13 @@ export class AuthController {
 
   @Get('refresh-token')
   @Auth(AuthType.None)
-  public async refreshToken(@Req() req: Request, @Res() res: Response) {
+  public refreshToken(@Req() req: Request, @Res() res: Response) {
     return this.authService.refreshToken(req, res);
+  }
+
+  @Post('verify-refresh-token')
+  @Auth(AuthType.None)
+  public verifyRefreshToken(@Body() data: { refreshToken: string }) {
+    return this.authService.verifyRefreshToken(data);
   }
 }

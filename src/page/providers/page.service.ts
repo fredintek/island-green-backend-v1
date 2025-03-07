@@ -87,7 +87,6 @@ export class PageService {
   }
 
   public async createBulkProject(createBulkProjectDto: CreateBulkProjectDto) {
-    // console.log('createBulkProjectDto --->', createBulkProjectDto);
     const queryRunner = this.datasource.createQueryRunner();
 
     try {
